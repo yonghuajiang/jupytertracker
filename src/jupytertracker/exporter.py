@@ -15,7 +15,7 @@ _HEADER_TEMPLATE = """\
 # A cell that was modified and re-run appears multiple times — once per execution.
 # NOTE: This script may not run top-to-bottom without error if cells relied on
 # intermediate kernel state not captured here. It is an execution record, not a
-# guaranteed reproducible script. Use mode='dedup' (v2) for deduplication.
+# guaranteed reproducible script.
 """
 
 
