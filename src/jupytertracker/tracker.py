@@ -24,7 +24,7 @@ class Tracker:
 
     def start(self, ip=None) -> None:
         if self._registered:
-            return
+            return  # idempotent — already tracking, do nothing
         if ip is None:
             try:
                 from IPython import get_ipython
@@ -38,6 +38,9 @@ class Tracker:
                 "or pass an IPython instance: jupytertracker.start(ip=get_ipython())"
             )
         self._ip = ip
+        self._log.clear()   # fresh session — discard any log from a previous run
+        self._counter = 0
+        self._pending = None
         ip.events.register("pre_run_cell", self._on_pre_run_cell)
         ip.events.register("post_run_cell", self._on_post_run_cell)
         self._registered = True

@@ -21,19 +21,19 @@ def test_dedup_mode_raises_not_implemented(tmp_path):
         jupytertracker.export_script(str(tmp_path / "out.py"), mode="dedup")
 
 
-def test_start_stop_start_works(tmp_path):
+def test_start_stop_start_clears_log(tmp_path):
     ip = _global_ip
     jupytertracker.start(ip=ip)
     ip.run_cell("a = 1")
     jupytertracker.stop()
     ip.run_cell("b = 2")  # not tracked
-    jupytertracker.start(ip=ip)
+    jupytertracker.start(ip=ip)  # fresh session — old log discarded
     ip.run_cell("c = 3")
     log = jupytertracker.get_log()
     sources = [r.source for r in log]
-    assert any("a = 1" in s for s in sources)
-    assert not any("b = 2" in s for s in sources)
-    assert any("c = 3" in s for s in sources)
+    assert not any("a = 1" in s for s in sources)  # pre-stop entries gone
+    assert not any("b = 2" in s for s in sources)  # untracked — still absent
+    assert any("c = 3" in s for s in sources)       # post-restart entry present
 
 
 def test_full_pipeline(tmp_path):
