@@ -62,8 +62,12 @@ jupytertracker.get_log()             # return list of ExecutionRecord
 
 ## Notes
 
+- **Call `start()` in your very first cell**, before any imports or data loading. The tracker only records what runs after `start()` is called. Any state built up before — loaded dataframes, imported libraries, defined variables — is invisible to the tracker and will be missing from the exported script.
+
+- **The exported script is an execution record, not a guaranteed reproducible script.** If cells depended on state that existed in the kernel but wasn't captured (see above), the script will fail with a `NameError` when run top-to-bottom. Example: a model trained on `X_train` that was loaded before `start()` was called.
+
 - **Kernel restart** resets tracking automatically (Python state is cleared). Call `export_script()` before restarting if you want to preserve the session.
-- The exported script is an **execution record**, not a guaranteed reproducible script. Cells that depend on intermediate kernel state may not run top-to-bottom without error. This is v1 — artifact-aware deduplication is planned for v2.
+
 - Magic commands (`%matplotlib inline`, `!pip install ...`) are included with a comment noting they require a Jupyter environment.
 
 ## Roadmap
