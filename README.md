@@ -79,4 +79,3 @@ jupytertracker.get_log()             # return list of ExecutionRecord
 ## Roadmap
 
 - **v2:** `mode='dedup'` — deduplicate to the last version of each cell, ordered by last execution. For "clean up my notebook" workflows.
-- **v3:** `wpr_` annotation pattern — functions prefixed with `wpr_` have their outputs collected for automated whitepaper generation via an LLM.
