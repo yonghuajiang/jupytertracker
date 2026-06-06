@@ -70,6 +70,12 @@ jupytertracker.get_log()             # return list of ExecutionRecord
 
 - Magic commands (`%matplotlib inline`, `!pip install ...`) are included with a comment noting they require a Jupyter environment.
 
+## Related projects
+
+- **[ipyflow](https://github.com/ipyflow/ipyflow)** — reactive Python kernel that tracks dataflow between cells and can recover the minimal set of cells needed to reproduce an output. Requires switching kernels; takes a "prevent the mess" approach vs. jupytertracker's "record the mess" approach.
+- **[papermill](https://github.com/nteract/papermill)** — parameterizes and executes notebooks top-to-bottom. Good for batch runs; doesn't handle interactive out-of-order execution.
+- **[reprozip-jupyter](https://pypi.org/project/reprozip-jupyter/)** — packs the full notebook environment (libraries, data) for portability. Solves environment reproducibility, not execution-order reproducibility.
+
 ## Roadmap
 
 - **v2:** `mode='dedup'` — deduplicate to the last version of each cell, ordered by last execution. For "clean up my notebook" workflows.
