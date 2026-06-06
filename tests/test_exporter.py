@@ -4,10 +4,12 @@ from jupytertracker.tracker import ExecutionRecord
 from jupytertracker.exporter import export_sequential
 
 
-def _records(*sources):
+def _records(*sources, durations=None):
+    if durations is None:
+        durations = [0.1 * (i + 1) for i in range(len(sources))]
     return [
-        ExecutionRecord(exec_count=i + 1, source=src, timestamp=float(i))
-        for i, src in enumerate(sources)
+        ExecutionRecord(exec_count=i + 1, source=src, timestamp=float(i), duration=dur)
+        for i, (src, dur) in enumerate(zip(sources, durations))
     ]
 
 
@@ -38,13 +40,9 @@ def test_sequential_execution_order(tmp_path):
     export_sequential(log, out)
     content = out.read_text()
     lines = [l for l in content.splitlines() if l.startswith("# execution")]
-    assert lines == [
-        "# execution 1",
-        "# execution 2",
-        "# execution 3",
-        "# execution 4",
-        "# execution 5",
-    ]
+    assert len(lines) == 5
+    for i, line in enumerate(lines, start=1):
+        assert line.startswith(f"# execution {i}  [")
 
 
 def test_empty_log_produces_header_only(tmp_path):
@@ -85,3 +83,45 @@ def test_output_file_has_header_warning(tmp_path):
     content = out.read_text()
     assert "jupytertracker" in content
     assert "sequential mode" in content
+
+
+def test_execution_time_shown_per_cell(tmp_path):
+    log = _records("x = 1", "y = 2", durations=[0.5, 1.25])
+    out = tmp_path / "out.py"
+    export_sequential(log, out)
+    content = out.read_text()
+    assert "500ms" in content
+    assert "1.25s" in content
+
+
+def test_total_execution_time_in_header(tmp_path):
+    log = _records("x = 1", "y = 2", durations=[30.0, 45.0])
+    out = tmp_path / "out.py"
+    export_sequential(log, out)
+    content = out.read_text()
+    # 75 seconds total = 1m 15.0s
+    assert "1m 15.0s" in content
+
+
+def test_cell_count_in_header(tmp_path):
+    log = _records("a = 1", "b = 2", "c = 3")
+    out = tmp_path / "out.py"
+    export_sequential(log, out)
+    content = out.read_text()
+    assert "Cells recorded: 3" in content
+
+
+def test_fmt_duration_ms(tmp_path):
+    log = _records("x = 1", durations=[0.034])
+    out = tmp_path / "out.py"
+    export_sequential(log, out)
+    assert "34ms" in out.read_text()
+
+
+def test_duration_recorded_in_tracker(ip):
+    import jupytertracker
+    jupytertracker.start(ip=ip)
+    ip.run_cell("import time; time.sleep(0.05)")
+    log = jupytertracker.get_log()
+    assert len(log) == 1
+    assert log[0].duration >= 0.05

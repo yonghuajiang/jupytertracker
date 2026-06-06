@@ -11,6 +11,7 @@ class ExecutionRecord:
     exec_count: int
     source: str
     timestamp: float
+    duration: float = 0.0  # seconds; set by post_run_cell
 
 
 class Tracker:
@@ -71,6 +72,7 @@ class Tracker:
             if self._pending is None:
                 return
             if result.success:
+                self._pending.duration = time.time() - self._pending.timestamp
                 self._log.append(self._pending)
             else:
                 # Discard: error, exception, or user interruption
